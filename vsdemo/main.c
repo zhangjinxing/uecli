@@ -4,23 +4,41 @@
 
 int uecli_port_in(void* buff, uint16_t maxnum);
 
-void testfun(int argc, char** argv)
+void estrtoitest(int argc, char** argv)
 {
-    uecli_PrintString("hellptest\n");
+    int32_t temp;
+    int res;
+
+    if (argc > 1)
+    {
+        res = estrtoi(argv[1], &temp);
+        char tcharbuff[128];
+        esnprintf(tcharbuff, 128, "执行结果：%d %o %x, 返回值：%d\r\n", temp, temp, temp, res);
+        uecli_PrintString(tcharbuff);
+    }
 
     argc = argc;
     argv = argv;
 }
-void testprtd(int argc, char** argv)
+void testprintf(int argc, char** argv)
 {
+    char tstr[128];
+    tstr[0] = '\0';
+
     if (argc > 2)
     {
         int valu = 0;
         if (estrtoi(argv[2], &valu))
-            eprintf(argv[1], valu);
+            esnprintf(tstr,128,argv[1], valu);
         else
-            eprintf("请输入正确的参数\r\n");
+            esnprintf(tstr, 128, "%s", "请输入正确的参数\r\n");
     }
+    else if (argc > 1)
+        esnprintf(tstr, 128, argv[1]);
+    else
+        esnprintf(tstr, 128, "%s", "请输入正确的参数\r\n");
+
+    uecli_PrintString(tstr);
     argc = argc;
     argv = argv;
 }
@@ -39,8 +57,8 @@ const uecli_Handle submenu[] =
 
 const uecli_Handle handtalbe[]=
 {
-    UECLI_DECLARE_COMMAND(testfun,"test", "一个测试函数"),
-    UECLI_DECLARE_COMMAND(testfun,"testprint", "一个测试函数"),
+    UECLI_DECLARE_COMMAND(estrtoitest,"estrtoi", "测试estrtoi"),
+    UECLI_DECLARE_COMMAND(testprintf,"eprintf", "测试eprintf"),
     UECLI_DECLARE_SUBMENU(submenu,"menu1", "子菜单测试"),
     UECLI_ITEM_END()
 };

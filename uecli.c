@@ -636,7 +636,8 @@ void uecli_ProcessRecChar(const char recchar[], int len)
  */
 void uecli_PrintString(const char* str)
 {
-    uecli_port_out(str, uecli_strlen(str));
+    if (str)
+        uecli_port_out(str, uecli_strlen(str));
 }
 /**
  * @brief      初始化CLI命令行对象

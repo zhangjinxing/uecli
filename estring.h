@@ -33,17 +33,17 @@ estring是嵌入式安全字符串操作函数库
 extern "C" {
 #endif
 
-void estrncpy(char* dest, const char* source, int size);
-uint32_t estrlen(const char* str);
+unsigned int estrncpy(char* dest, const char* source, unsigned int size);
+unsigned int estrlen(const char* str);
 uint32_t estrnlen(const char* str, uint32_t maxlen);
-void estrncat(char* dest, const char* source, uint32_t size);
-void estrJoin(char* dest, int size, const char* separator, const char* pstr[], int count);
-void estrJoinArg(char* dest, int size, const char* separator, int count, ...);
+void estrncat(char* dest, const char* source, unsigned int size);
+void estrJoin(char* dest, unsigned int size, const char* separator, const char* pstr[], unsigned int count);
+void estrJoinArg(char* dest, unsigned int size, const char* separator, unsigned int count, ...);
 void eStrToLower(char* str);
 void eStrToUpper(char* str);
 int estrcmp(const char* src, const char* dst);
 int estrcmpNocase(const char* src, const char* dst);
-int eStrSplit(char* str, char separator, char* substr[], int size);
+unsigned int eStrSplit(char* str, char separator, char* substr[], unsigned int size);
 char* estrchr(const char* str, char chr);
 void eStrExpand(char* pdes, char chr, int width);
 int estrtoi(const char *str, int32_t * varl);

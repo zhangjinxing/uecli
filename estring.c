@@ -29,55 +29,55 @@ static const char LCode[] = "0123456789abcdefx";
 // @dest		目的
 // @source		源
 // @size		目的缓冲区大小
-返回值:	void
+返回值:	unsigned int 实际拷贝字符串长度
 ******************************************************************************************/
-void estrncpy(char* dest, const char* source, int size)
+unsigned int estrncpy(char* dest, const char* source, unsigned int size)
 {
     //参数断言
     ESTR_ASSERT(dest);
     ESTR_ASSERT(source);
+    ESTR_ASSERT(dest != source);
 
-    if (dest != source && size)
+    if (size)
     {
-        for (; --size && '\0' != (*dest = *source); ++dest, ++source);
+        register unsigned int i = size;
+        for (; --i && '\0' != (*dest = *source); ++dest, ++source);
         *dest = '\0';
+        return size - i - 1;
     }
+    return 0;
 }
 /******************************************************************************************
 说明:			获取指定的字符串长度
 参数:
 // @str			所需处理的字符串
-返回值:	int		长度结果
+返回值:	unsigned int		长度结果
 ******************************************************************************************/
-uint32_t estrlen(const char* str)
+unsigned int estrlen(const char* str)
 {
     //参数断言
     ESTR_ASSERT(str);
 
     const char* eos = str;
     while (*eos++);
-    return (uint32_t)(eos - str - 1);
+    return (unsigned int)(eos - str - 1);
 }
 /******************************************************************************************
 说明:			获取指定的字符串长度
 参数:
 // @str			所需处理的字符串
-// @maxlen      最大允许长度
-返回值:	int		长度结果
+// @maxlen      最大允许字符串长度
+返回值:	unsigned int    长度结果
 ******************************************************************************************/
-uint32_t estrnlen(const char* str, uint32_t maxlen)
+unsigned int estrnlen(const char* str, unsigned int maxlen)
 {
-    register uint32_t i = maxlen;
-
     //参数断言
     ESTR_ASSERT(str);
 
-    while (*str++ && i)
-    {
-        --i;
-    }
+    register unsigned int i = maxlen;
+    for (; *str && i; --i, ++str);
 
-    return (uint32_t)(maxlen - i);
+    return (unsigned int)(maxlen - i);
 }
 /******************************************************************************************
 说明:			将字符串安全的添加在指定字符串结尾
@@ -87,18 +87,16 @@ uint32_t estrnlen(const char* str, uint32_t maxlen)
 // @size		目的缓冲区大小
 返回值:	void
 ******************************************************************************************/
-void estrncat(char* dest, const char* source, uint32_t size)
+void estrncat(char* dest, const char* source, unsigned int size)
 {
-    uint32_t len;
-
     //参数断言
     ESTR_ASSERT(dest);
     ESTR_ASSERT(source);
     ESTR_ASSERT(size);
 
-    len = estrlen(dest);
+    unsigned int len = estrlen(dest); /* 目的字符串长度 */
     ESTR_ASSERT(size >= len + 1);
-    if (size >= len + 1)
+    if (size > len + 1)
         estrncpy(&dest[len], source, size - len - 1);
 }
 /******************************************************************************************
@@ -111,15 +109,15 @@ void estrncat(char* dest, const char* source, uint32_t size)
 // @count		字符串数组大小
 返回值:	void
 ******************************************************************************************/
-void estrJoin(char* dest, int size, const char* separator, const char* pstr[], int count)
+void estrJoin(char* dest, unsigned int size, const char* separator, const char* pstr[], unsigned int count)
 {
-    const char* source;
-    char temp;
-    int i = 0;
-
     //参数断言
     ESTR_ASSERT(dest);
     ESTR_ASSERT(size);
+
+    const char* source;
+    char temp;
+    unsigned int i = 0;
 
     //字符串数组数量为0直接退出
     if (!count || !pstr) return;
@@ -160,13 +158,14 @@ STR_JOIN_LABLE_END:
 // @count		字符串数量
 返回值:	void
 ******************************************************************************************/
-void estrJoinArg(char* dest, int size, const char* separator, int count, ...)
+void estrJoinArg(char* dest, unsigned int size, const char* separator, unsigned int count, ...)
 {
+    ESTR_ASSERT(count <= 8);
+
     const char* pstr[8];
-    register int i;
+    register unsigned int i;
     va_list argptr;
 
-    ESTR_ASSERT(count <= 8);
     if (!count) return;
 
     va_start(argptr, count);
@@ -186,16 +185,13 @@ void estrJoinArg(char* dest, int size, const char* separator, int count, ...)
 ******************************************************************************************/
 void eStrToLower(char* str)
 {
-    register char temp;
-
     ESTR_ASSERT(str);
 
-    while ('\0' != (temp = *str))
+    register char c;
+    for (; '\0' != (c = *str); ++str)
     {
-        if (temp >= 'A' && temp <= 'Z')
+        if (c >= 'A' && c <= 'Z')
             *str += 'a' - 'A';
-
-        ++str;
     }
 }
 /******************************************************************************************
@@ -206,16 +202,13 @@ void eStrToLower(char* str)
 ******************************************************************************************/
 void eStrToUpper(char* str)
 {
-    register char temp;
-
     ESTR_ASSERT(str);
 
-    while (0 != (temp = *str))
+    register char c;
+    for (; 0 != (c = *str); ++str)
     {
-        if (temp >= 'a' && temp <= 'z')
+        if (c >= 'a' && c <= 'z')
             *str += 'A' - 'a';
-
-        ++str;
     }
 }
 /******************************************************************************************
@@ -227,9 +220,6 @@ void eStrToUpper(char* str)
 ******************************************************************************************/
 int estrcmp(const char* src, const char* dst)
 {
-    int ret = 0;
-    char temp;
-
     //参数断言
     ESTR_ASSERT(src);
     ESTR_ASSERT(dst);
@@ -237,12 +227,11 @@ int estrcmp(const char* src, const char* dst)
     //判断指针是否相等
     if (src == dst) return 0;
 
-    for (; '\0' != (temp = *dst); ++src, ++dst)
-    {
-        if (0 != (ret = *src - temp))
-            break;
-    }
+    int ret = 0;
+    char c;
+    for (; '\0' != (c = *dst) && c == *src; ++src, ++dst);
 
+    ret = *src - c;
     //格式化结果数值
     if (ret < 0)
         ret = -1;
@@ -259,12 +248,12 @@ int estrcmp(const char* src, const char* dst)
 ******************************************************************************************/
 int estrcmpNocase(const char* src, const char* dst)
 {
-    char temp1, temp2;
-    int ret = 0;
-
     //参数断言
     ESTR_ASSERT(src);
     ESTR_ASSERT(dst);
+
+    char temp1, temp2;
+    int ret = 0;
 
     //判断指针是否相等
     if (src == dst) return 0;
@@ -297,23 +286,21 @@ int estrcmpNocase(const char* src, const char* dst)
 // @size		子字符串数组大小
 返回值:	int		分割出的子字符串数量
 ******************************************************************************************/
-int eStrSplit(char* str, char separator, char* substr[], int size)
+unsigned int eStrSplit(char* str, char separator, char* substr[], unsigned int size)
 {
-    int count = 0;
-    register char c;
-    char ischar = 0;		/* 字符标记 */
-
-                            //参数断言
+    //参数断言
     ESTR_ASSERT(str);
     ESTR_ASSERT(substr);
 
-    while ('\0' != (c = *str))
+    unsigned int count = 0;
+    register char c;
+    char ischar = 0;		/* 字符标记 */
+
+    for (; '\0' != (c = *str); ++str)
     {
         //将控制字符转换为空白
         if (c < ' ' || c > '\x7f')
-        {
             *str = ' ';
-        }
 
         //分割字符
         if (' ' == c || separator == c)
@@ -332,8 +319,6 @@ int eStrSplit(char* str, char separator, char* substr[], int size)
                 if (count >= size) break;
             }
         }
-
-        ++str;
     }
     return count;
 }
@@ -346,13 +331,13 @@ int eStrSplit(char* str, char separator, char* substr[], int size)
 ******************************************************************************************/
 char* estrchr(const char* str, char chr)
 {
-    char temp;
     ESTR_ASSERT(str);
 
-    for (; '\0' != (temp = *str); ++str)
+    char c;
+    for (; '\0' != (c = *str); ++str)
     {
-        if (temp == chr)
-            return((char *)str);
+        if (c == chr)
+            return (char *)str;
     }
 
     return (0);
@@ -367,10 +352,10 @@ char* estrchr(const char* str, char chr)
 ******************************************************************************************/
 void eStrExpand(char* pdes, char chr, int width)
 {
-    int len = estrlen(pdes);
-
     //参数检查
     ESTR_ASSERT(pdes);
+
+    int len = estrlen(pdes);
 
     if (len >= width) return;
 
@@ -387,6 +372,7 @@ void eStrExpand(char* pdes, char chr, int width)
 }
 
 /*----------------------------------------数据转换----------------------------------------------*/
+
 /******************************************************************************************
 说明:字符串转换为整数
 --0x或0X开头将会被按16进制转换为数值
@@ -400,64 +386,65 @@ void eStrExpand(char* pdes, char chr, int width)
 ******************************************************************************************/
 int estrtoi(const char *str, int32_t * varl)
 {
-    char ibase = 10, flags = 0, c;
-    int32_t  val = 0;
-
     //参数断言
     ESTR_ASSERT(str);
     ESTR_ASSERT(varl);
 
-    //跳过前导空格
-    while (' ' == *str) ++str;
-    *varl = 0;
-    c = *str;
-    //判断符号标志
-    if ('-' == c)
-        flags = *str++;
-    else if ('+' == c)
-        str++;
+    char ibase = 10, flags = '+';
+    register char c;
 
-    c = *str;
+    //跳过前导空格
+    for (; ' ' == *str; ++str);
+    //判断符号标志
+    if ('-' == (c = *str))
+    {
+        flags = c;
+        c = *++str;
+    }
+    else if ('+' == c)
+        c = *++str;
+
     //判断16进制、8进制、二进制
     if ('0' == c)
     {
-        c = *++str;			/* 0之后的一个字符 */
-        if (c >= 'a') c -= 0x20;		/* 转换为大写字母 */
-        if ('X' == c)		/* 0x或0X为16进制 */
+        c = *++str;     /* 0之后的一个字符 */
+        ibase = 8;      /* 默认为8进制 */
+
+        if ('X' == c || 'x' == c)		/* 0x或0X为16进制 */
         {
             ibase = 16;
-            c = *++str;
+            ++str;
         }
-        else if ('B' == c)	/* 0b或0B为2进制 */
+        else if ('B' == c || 'b' == c)	/* 0b或0B为2进制 */
         {
             ibase = 2;
-            c = *++str;
+            ++str;
         }
-        else				/* 否则为8进制 */
-            ibase = 8;
     }
-    else					/* 10进制 */
-        ibase = 10;
 
+    int32_t  val = 0;
     // 转换为数值
     while (0 != (c = *str++))
     {
         // 转换数值
-        if (c >= 'a') c -= 0x20;	/* 转换为大写字母 */
-        if (c >= '0'&&c <= '9')		/* 数字字符 */
-            c -= '0';
-        else if (c >= 'A'&&c <= 'F')/* A~F转换位10~15 */
+        if (c >= 'a')
+            c -= ('a' - 10);
+        else if (c >= 'A')
             c -= ('A' - 10);
+        else if (c >= '0' && c <= '9')
+            c -= '0';
         else
             return 0;
 
         //转换为数值
-        if (c >= ibase) return 0;		/* 当前基数非法的字符 */
+        if (c >= ibase) 
+            return 0;   /* 当前基数非法的字符 */
         val = val * ibase + c;
     }
 
     //负号处理
-    if (flags) val = 0 - val;			/* apply sign if needed */
+    if ('-' == flags) 
+        val = -val;			/* apply sign if needed */
     *varl = val;
     return 1;
 }
@@ -467,15 +454,14 @@ int estrtoi(const char *str, int32_t * varl)
 // @s			字符串
 返回值:	int32_t
 ******************************************************************************************/
-int32_t eAtoi(const char* s)
+int32_t eatoi(const char* s)
 {
     int value;
     char c;
     uint8_t sig = 0;
 
     //跳过空格
-    while (' ' == *s)
-        ++s;
+    for (; ' ' == *s; ++s);
     c = *s++;
 
     //判断符号位
@@ -531,15 +517,15 @@ int estrtof(const char *str, float * varl)
     ESTR_ASSERT(varl);
 
     //跳过所有前空格
-    while (' ' == *str) ++str;
+    for (; ' ' == *str; ++str);
     //判断符号位 
     if ('-' == *str)
         digSign = *str++;
     else if ('+' == *str)
         str++;
     *varl = 0.0f;
-    while ('0' == *str) ++str;		/* 跳过前导0 */
-                                    //转换有效数字
+    for (; '0' == *str; ++str);		/* 跳过前导0 */
+    //转换有效数字
     c = *str;
     for (;;)
     {
@@ -678,6 +664,7 @@ void eprintf(const char*fmt, ...)
     evprintf(putchar, fmt, ap);
     va_end(ap);
 }
+
 /******************************************************************************************
 说明:	格式打印输出函数
 支持
@@ -690,7 +677,6 @@ void eprintf(const char*fmt, ...)
 ******************************************************************************************/
 void evprintf(void(*pfun)(char), const char*fmt, va_list arp)
 {
-    int32_t sv;
     uint32_t nv;
     char s[36], *p;
     register char c;
@@ -768,15 +754,14 @@ void evprintf(void(*pfun)(char), const char*fmt, va_list arp)
         //处理标准标记
         hcode = UCode;
         p = &s[35]; s[35] = '\0'; i = 0;
-        sv = va_arg(arp, int32_t);
-        nv = (uint32_t)sv;
+        nv = va_arg(arp, uint32_t);
         switch (c)
         {
         case 'c':	/* %c 打印字符 */
-            pfun((char)sv);
+            pfun((char)nv);
             continue;
         case 's':	/* %s 打印字符串 */
-            p = (char*)sv;		    /* 字符串指针参数 */
+            p = (char*)nv;		    /* 字符串指针参数 */
             ESTR_ASSERT(p);
             for (; p[i]; ++i);		/* 计算字符串长度 */
             goto PRINT_STRING;
@@ -791,26 +776,21 @@ void evprintf(void(*pfun)(char), const char*fmt, va_list arp)
             hcode = LCode;
         case 'B':
             if (fg&FL_ALTERNATE) { pfun('0'); pfun(hcode[0x0b]); i += 2; }
-            if (!nv) { *--p = '0'; ; ++i; }
+            if (!nv) { *--p = '0'; ++i; }
             else for (; nv; ++i) { *--p = hcode[nv & 0x01]; nv >>= 1; }
             goto PRINT_STRING;
         case 'o':	/* %o 8进制显示 */
-            if (sv)
-            {
-                if (sv < 0) { nv = -sv; }
-                for (; nv; ++i) { *--p = hcode[nv & 0x07]; nv >>= 3; }
-            }
-            if (fg&FL_ALTERNATE) { *--p = '0'; ++i; }
-            if (sv < 0) { *--p = '-'; ++i; }
+            if ((int32_t)nv < 0) {nv = 0 - nv; pfun('-');++i;}
+            else if (fg&FL_SIGN) { pfun('+'); ++i; }
+            if (fg&FL_ALTERNATE) { pfun('0'); ++i; }
+            else if (!nv) { *--p = '0'; ++i; }
+            else for (; nv; ++i) { *--p = hcode[nv & 0x07]; nv >>= 3; }
             goto PRINT_STRING;
         case 'd':
-            if (!sv) { *--p = '0'; ++i; }
-            else
-            {
-                if (sv < 0) { nv = -sv; }
-                for (; nv; ++i) { *--p = hcode[nv % 10]; nv /= 10; }
-                if (sv < 0) { *--p = '-'; ++i; }
-            }
+            if ((int32_t)nv < 0) { nv = 0 - nv; pfun('-'); ++i; }
+            else if (fg&FL_SIGN) { pfun('+'); ++i; }
+            if (!nv) { *--p = '0'; ++i; }
+            else for (; nv; ++i) { *--p = hcode[nv % 10]; nv /= 10; }
             goto PRINT_STRING;
         default:
             pfun(c); continue;
