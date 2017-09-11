@@ -31,9 +31,6 @@
 // 无效的历史记录索引
 #define INVALID_HISTORY_INDEX   (-1)
 
-// 内部临时字符串缓存大小
-#define TEMP_STRING_LEN     (64)
-
 // ********************************************************************************************
 // 内部类型定义
 
@@ -96,10 +93,10 @@ static uecli_Type uecli;
 
 // ********************************************************************************************
 // 引用声明
+#include "uecli_cmd.h"
 
 void uecli_port_out(const void* buff, uint32_t num);
 bool uecli_port_init(void);
-#include "uecli_cmd.h"
 // ********************************************************************************************
 // 内部函数
 
@@ -495,7 +492,7 @@ static void AutoCompleteInstring(void)
     int i = 0;
 
     /* 匹配系统命令 */
-    i = SearchAutoCompleteCommand(matchStringTable, i, uecli_syscmdList);
+    i = SearchAutoCompleteCommand(matchStringTable, i, GetSyscmdHandle());
     if (i < UECLI_CFG_AUTOCOMP_NUM)
         i = SearchAutoCompleteCommand(matchStringTable, i, GetUserCmdHandle());
 
@@ -547,7 +544,7 @@ static const uecli_Handle* SearchMatchCommand(const char* cmdline)
 {
     const uecli_Handle* ptr = NULL;
     /* 搜索系统命令列表 */
-    for (ptr = uecli_syscmdList; ptr->pdata; ++ptr)
+    for (ptr = GetSyscmdHandle(); ptr->pdata; ++ptr)
     {
         if (!uecli_strcasecmp(cmdline, ptr->exename))
             return ptr;

@@ -46,6 +46,8 @@ void testprintf(int argc, char** argv)
 void menufun(int argc, char** argv)
 {
     uecli_PrintString("testmenu\n");
+    argc = argc;
+    argv = argv;
 }
 
 const uecli_Handle submenu[] =

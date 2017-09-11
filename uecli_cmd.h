@@ -41,28 +41,30 @@ const char* STRING_CMD_LIST = "%-16s %s\r\n";
 // ********************************************************************************************
 // 系统命令支持
 
-extern const uecli_Handle uecli_syscmdList[];
+static inline const uecli_Handle* GetSyscmdHandle(void);
 static const uecli_Handle* GetUserCmdHandle(void);
 static const uecli_Handle* PopMenuStack(void);
 static const uecli_Handle* SearchMatchCommand(const char* cmdline);
 
+// 打印命令句柄列表
+static void PrintHandleList(const uecli_Handle* ptr)
+{
+    if (ptr)
+    {
+        for (; ptr->pdata; ++ptr)
+        {
+            uecli_snprintf(uecli.tmpString, TEMP_STRING_LEN, STRING_CMD_LIST,
+                ptr->exename, ptr->desc);
+            uecli_PrintString(uecli.tmpString);
+        }
+    }
+}
+
 // 打印支持的命令列表
 static void PrintCommandList()
 {
-    const uecli_Handle* ptr = uecli_syscmdList;
-    for (; ptr->pdata; ++ptr)
-    {
-        uecli_snprintf(uecli.tmpString, TEMP_STRING_LEN, STRING_CMD_LIST,
-            ptr->exename, ptr->desc);
-        uecli_PrintString(uecli.tmpString);
-    }
-    ptr = GetUserCmdHandle();
-    for (; ptr->pdata; ++ptr)
-    {
-        uecli_snprintf(uecli.tmpString, TEMP_STRING_LEN, STRING_CMD_LIST,
-            ptr->exename, ptr->desc);
-        uecli_PrintString(uecli.tmpString);
-    }
+    PrintHandleList(GetSyscmdHandle());      // 打印系统命令表
+    PrintHandleList(GetUserCmdHandle());    // 打印用户命令表
 }
 // help命令
 static void Cmd_HelpMain(int argc, char* argv[])
@@ -112,7 +114,7 @@ static void Cmd_UpperMain(int argc, char* argv[])
     argv = argv;
 }
 // 系统命令表
-const uecli_Handle uecli_syscmdList[] =
+static const uecli_Handle uecli_syscmdList[] =
 {
     UECLI_DECLARE_COMMAND(Cmd_UpperMain,   "..",       "返回上级子菜单"),
     UECLI_DECLARE_COMMAND(Cmd_HelpMain,    "help",     "显示支持的命令列表"),
@@ -120,3 +122,8 @@ const uecli_Handle uecli_syscmdList[] =
     UECLI_DECLARE_COMMAND(Cmd_ClearMain,   "cls",      "清空屏幕"),
     UECLI_ITEM_END()
 };
+
+static inline const uecli_Handle* GetSyscmdHandle(void)
+{
+    return uecli_syscmdList;
+}

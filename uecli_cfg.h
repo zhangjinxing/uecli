@@ -18,6 +18,9 @@
 /* 输入命令行字符串最大长度 */
 #define UECLI_CFG_MAX_CMDLINE    (32)
 
+// 内部临时字符串缓存大小
+#define TEMP_STRING_LEN     (64)
+
 /* 输入命令行中最大分割参数数量 */
 #define UECLI_CFG_MAX_ARGNUM     (6)
 
