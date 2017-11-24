@@ -601,7 +601,7 @@ void efprintf(void(*pfun)(char), const char*fmt, ...)
 
 static char* _buff_ptr;
 static uint32_t _buff_size = 0;
-void putchar(char chr);
+void eputchar(char chr);
 
 /******************************************************************************************
 说明:	字符串缓冲区字符打印函数
@@ -661,7 +661,7 @@ void eprintf(const char*fmt, ...)
     ESTR_ASSERT(fmt);
 
     va_start(ap, fmt);
-    evprintf(putchar, fmt, ap);
+    evprintf(eputchar, fmt, ap);
     va_end(ap);
 }
 
@@ -831,25 +831,25 @@ void ePrintMem(uint8_t* pbuff, uint32_t size, uint32_t addr, uint8_t linsize)
         cnum = addr;
         for (i = 0; i < 8; ++i)
         {
-            putchar(UCode[cnum >> 28]);	/* 先打印高HEX字符 */
+            eputchar(UCode[cnum >> 28]);	/* 先打印高HEX字符 */
             cnum <<= 4;				    /* 为下次打印做准备 */
         }
-        putchar(':');
-        putchar(' ');
+        eputchar(':');
+        eputchar(' ');
         cnum = size < linsize ? size : linsize; /* 计算所需打印字符数量 */
 
         //按hex格式打印数据
         for (i = 0; i < cnum; ++i)
         {
             c = pbuff[i];
-            putchar(UCode[c >> 4]);
-            putchar(UCode[c & 0x0f]);
-            putchar(' ');
+            eputchar(UCode[c >> 4]);
+            eputchar(UCode[c & 0x0f]);
+            eputchar(' ');
         }
         //打印对齐空白
         for (i = linsize-cnum; i; --i)
         {
-            putchar(' '); putchar(' '); putchar(' ');
+            eputchar(' '); eputchar(' '); eputchar(' ');
         }
 
         //按ASCII码打印数据
@@ -857,9 +857,9 @@ void ePrintMem(uint8_t* pbuff, uint32_t size, uint32_t addr, uint8_t linsize)
         {
             c = *pbuff++;
             if (c<' ' || c>'\x7f') c = '.';
-            putchar(c);	    /* 打印字符 */
+            eputchar(c);	    /* 打印字符 */
         }
-        putchar('\n');
+        eputchar('\n');
     }
 }
 

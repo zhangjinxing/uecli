@@ -36,7 +36,7 @@ bool uecli_port_init(void)
     //执行结果
     bool result;
     //COM端口字符串
-    const char* comName = "COM4";
+    const char* comName = "COM2";
     DWORD dwErrorFlags;
 
     ////////////////////////////////////////////////////////
