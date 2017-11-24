@@ -29,33 +29,24 @@
 ### 裁剪配置
 在`uecli_cfg.h`文件中可以对uecli进行配置和裁剪：
 ```C
-#define SHELL_CFG_COLOR         (1)     /* 支持颜色扩展 */
-#define UECLI_CFG_LONG_HELP     (1)     /* 长帮助信息支持 */
-#define UECLI_CFG_SUBMENU       (1)     /* 命令堆栈支持 */
-#define UECLI_CFG_HISTORY       (1)     /* 命令历史支持 */
-#define UECLI_CFG_COMPLETE      (1)     /* 自动补全支持 */
+#define UECLI_01_COLOR          (0)     ///< 支持颜色扩展
+#define UECLI_01_IN_HOOK        (1)     ///< 输入钩子支持
+#define UECLI_01_LONG_HELP      (1)     ///< 长帮助信息支持
+#define UECLI_01_SUBMENU        (1)     ///< 子菜单支持
+#define UECLI_01_HISTORY        (1)     ///< 命令历史支持
+#define UECLI_01_COMPLETE       (1)     ///< 自动补全支持
 ```
 
 ### 其他配置
 在`uecli_cfg.h`文件中可以对提示符最大字符数、命令行最大字符数、最大子菜单层数等进行配置：
 ```C
-/* 输入命令行字符串最大长度 */
-#define UECLI_CFG_MAX_CMDLINE    (32)
-
-/* 输入命令行中最大分割参数数量 */
-#define UECLI_CFG_MAX_ARGNUM     (6)
-
-/* 提示符字符串最大长度 */
-#define UECLI_CFG_MAX_POMPTLINE  (32)
-
-/* 输入命令行历史最大数量 */
-#define UECLI_CFG_HISTORY_COUNT (16)
-
-/* 子菜单堆栈最大数量 */
-#define UECLI_CFG_STACK_COUNT   (4)
-
-/* 自动补全最大显示数量 */
-#define UECLI_CFG_AUTOCOMP_NUM  (16)
+#define UECLI_CFG_STR_MAXLEN     (32)    ///< 输入命令行字符串最大长度
+#define UECLI_CFG_TEMP_MAXLEN    (64)    ///< 内部处理临时字符串最大长度
+#define UECLI_CFG_MAX_ARGNUM     (6)     ///< 输入命令行中最大分割参数数量
+#define UECLI_CFG_MAX_POMPTLINE  (32)    ///< 提示符字符串最大长度
+#define UECLI_CFG_HISTORY_COUNT  (8)     ///< 输入命令行历史最大数量
+#define UECLI_CFG_STACK_COUNT    (8)     ///< 子菜单堆栈最大数量
+#define UECLI_CFG_AUTOCOMP_NUM   (16)    ///< 自动补全最大显示数量
 ```
 
 ### 不同平台的换行符
@@ -76,7 +67,7 @@ const uecli_Handle handtalbe[]=
     UECLI_DECLARE_COMMAND(testfun,"printtest1", "测试函数1"),
     UECLI_DECLARE_COMMAND(testfun,"printtest", "测试函数"),
     UECLI_DECLARE_SUBMENU(handtalbe,"submenu", "子菜单测试"),
-    UECLI_ITEM_END()
+    UECLI_DECLARE_END()
 };
 ```
 - UECLI_DECLARE_COMMAND：该项目为一个功能命令项，输入该命令将会调用相应的函数并执行。
